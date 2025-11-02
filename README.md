@@ -41,6 +41,188 @@ This will start:
 ./stop.sh
 ```
 
+## ⚙️ Configuration
+
+Before running tests, configure the framework in `automation/config.json`:
+
+### API Configuration
+
+```json
+{
+  "api": {
+    "base_url": "http://localhost:8000",
+    "schema": "http://localhost:8000/openapi.json",
+    "auth_type": null
+  }
+}
+```
+
+**Configuration Fields:**
+
+- **`base_url`**: Base URL of your API server (e.g., `http://localhost:8000`, `https://api.example.com`)
+- **`schema`**: URL to your OpenAPI/Swagger specification (e.g., `http://localhost:8000/openapi.json`, `http://localhost:8000/swagger.json`)
+- **`auth_type`**: Authentication method - `null` (no auth), `"basic"`, `"bearer"`, or `"token"`
+
+**Authentication Setup:**
+
+If your API requires authentication, set environment variables:
+
+```bash
+# For Basic Authentication
+export API_USERNAME="your_username"
+export API_PASSWORD="your_password"
+
+# For Bearer/Token Authentication
+export API_TOKEN="your_token_here"
+```
+
+Then update `auth_type` in config.json:
+```json
+{
+  "api": {
+    "auth_type": "basic"  // or "bearer" or "token"
+  }
+}
+```
+
+**LLM Configuration:**
+
+The framework requires an Anthropic API key:
+
+```bash
+export ANTHROPIC_API_KEY="your_anthropic_api_key"
+```
+
+## 🤖 Running the Master Agent
+
+The Master Agent is the **single entry point** for the automation framework. It intelligently decomposes tasks and orchestrates specialized agents.
+
+Navigate to the automation directory:
+```bash
+cd automation
+```
+
+### Test Types Available
+
+| Test Type | Description | Use Case |
+|-----------|-------------|----------|
+| **Integration** | Verify integration between components | Testing API endpoints work together |
+| **System** | End-to-end system verification | Complete user workflows |
+| **Component** | Individual component testing | Isolated endpoint testing |
+| **Regression** | Prevent fixed bugs from returning | Stability checks after changes |
+| **Sanity** | Basic smoke tests | Quick health checks |
+
+### Basic Usage
+
+```bash
+# Execute existing test cases (all types)
+python master.py --task "execute testcases"
+
+# Create test cases from OpenAPI spec
+python master.py --task "create tests"
+
+# Create and execute tests in one command
+python master.py --task "create and run tests"
+```
+
+### Running Specific Test Types
+
+```bash
+# Execute only integration tests
+python master.py --task "execute integration tests"
+
+# Execute only system tests
+python master.py --task "execute system tests"
+
+# Execute only component tests
+python master.py --task "execute component tests"
+
+# Execute only regression tests
+python master.py --task "execute regression tests"
+
+# Execute only sanity tests
+python master.py --task "execute sanity tests"
+```
+
+### Advanced Examples
+
+```bash
+# Generate tests and run only integration tests
+python master.py --task "create tests and run integration tests"
+
+# Run multiple test types
+python master.py --task "execute integration and system tests"
+
+# Create comprehensive test suite
+python master.py --task "generate comprehensive test cases from API schema"
+
+# Execute all tests and generate reports
+python master.py --task "run all tests and create reports"
+```
+
+### How It Works
+
+The Master Agent will:
+1. **Parse** your task description
+2. **Delegate** to the Decomposer Agent
+3. **Orchestrate** specialized agents:
+   - **Test Case Generator**: Creates tests from OpenAPI specification
+   - **Test Case Executor**: Runs tests and generates reports
+4. **Generate** an execution summary JSON file
+
+### Master Agent Output
+
+After execution, you'll find:
+- **Execution Summary**: `master_execution_YYYYMMDD_HHMMSS.json` - Contains details of all agents executed and their status
+- **Test Cases**: Generated in `automation/testcases/{test_type}/testcases/` (if created)
+- **Test Reports**: Generated in `automation/testcases/{test_type}/reports/` (if executed)
+
+### Example Output
+
+```
+🎯 MASTER AGENT - API Test Automation Framework
+================================================================================
+📋 Task: create and run tests
+⏰ Started: 2025-11-01 14:30:00
+================================================================================
+
+📤 Master Agent: Delegating to Decomposer Agent...
+🧠 Decomposer Agent: Starting task decomposition
+   Task: 'create and run tests'
+
+📋 Task Decomposition:
+   Reasoning: Task requires test generation and execution
+   Execution Mode: sequential
+   Agents to execute: test_case_generator, test_case_executor
+
+🚀 Decomposer Agent: Executing 2 agent(s)
+
+================================================================================
+🤖 Decomposer Agent: Invoking test_case_generator
+   Test case generator agent - generates test cases from OpenAPI specifications
+================================================================================
+[Test generation output...]
+
+================================================================================
+🤖 Decomposer Agent: Invoking test_case_executor
+   Test case executor agent - executes test cases and generates reports
+================================================================================
+[Test execution output...]
+
+✅ MASTER AGENT - Execution Complete
+================================================================================
+📊 Task: create and run tests
+⏰ Completed: 2025-11-01 14:32:30
+
+   Agents executed: 2
+   ✅ test_case_generator: completed
+   ✅ test_case_executor: completed
+
+💾 Execution summary saved to: master_execution_20251101_143230.json
+================================================================================
+```
+
+## 📊 Servers and Services
 
 ### 1. Report API Server (port 5001)
 API for serving test reports to the React dashboard.
@@ -84,47 +266,7 @@ After running tests, view results:
 - **HTML Reports**: Located in `automation/testcases/{test_type}/reports/`
 - **JSON Reports**: Raw data in same reports directory
 
-## Running the Master Agent
-
-The Master Agent is the single entry point for the automation framework. It intelligently decomposes tasks and orchestrates specialized agents.
-
-Navigate to the automation directory:
-```bash
-cd automation
-```
-
-### Execute Tests via Master Agent
-
-```bash
-# Execute existing test cases
-python master.py --task "execute testcases"
-
-# Create and run tests in one go
-python master.py --task "create and run tests"
-
-# Just create test cases
-python master.py --task "create tests"
-```
-
-The Master Agent will:
-1. Parse your task description
-2. Delegate to the Decomposer Agent
-3. Orchestrate specialized agents to complete the task
-4. Generate an execution summary JSON file
-
-### Master Agent Output
-
-After execution, you'll find:
-- **Execution Summary**: `master_execution_YYYYMMDD_HHMMSS.json` - Contains details of all agents executed and their status
-- **Test Reports**: Generated in `automation/testcases/{test_type}/reports/` (if tests were executed)
-
-## Running Tests
-
-Navigate to the automation directory:
-```bash
-cd automation
-```
-
+## 📁 Test Cases Structure
 
 ### Directory Organization
 
@@ -136,19 +278,6 @@ automation/testcases/
 ├── regression/testcases/      # Regression test JSON files
 └── sanity/testcases/          # Sanity test JSON files
 ```
-
-### Test Case Fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `test_name` | string | Yes | Descriptive name for the test |
-| `endpoint` | string | Yes | API endpoint (supports path params like `/users/{user_id}`) |
-| `method` | string | Yes | HTTP method (GET, POST, PUT, DELETE, PATCH) |
-| `headers` | object | No | Request headers |
-| `params` | object | No | Query parameters or path parameters |
-| `body` | object | No | Request body (for POST/PUT/PATCH) |
-| `expected_status_code` | integer | Yes | Expected HTTP status code |
-| `validate_response` | object | No | Response validation rules |
 
 ## Reports
 
@@ -273,23 +402,6 @@ npm run dev
 - Historical data aggregation
 - OpenAPI/Swagger documentation
 - Comprehensive error handling
-
-## Test Types
-
-### Integration Tests
-Tests that verify the integration between different components.
-
-### System Tests
-End-to-end tests that verify the entire system works as expected.
-
-### Component Tests
-Tests that verify individual components work correctly in isolation.
-
-### Regression Tests
-Tests to ensure previously fixed bugs don't reoccur.
-
-### Sanity Tests
-Basic smoke tests to verify core functionality.
 
 ## Contributing
 
