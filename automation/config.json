@@ -1,0 +1,46 @@
+{
+  "api": {
+    "base_url": "http://localhost:8000",
+    "schema": "http://localhost:8000/openapi.json",
+    "auth_type": null
+  },
+  "agents": {
+    "master": {
+      "description": "Master orchestrator agent - single entry point for automation framework",
+      "llm_model": "claude-3-5-sonnet-20241022",
+      "temperature": 0
+    },
+    "decomposer": {
+      "description": "Task decomposition agent - intelligently breaks down tasks and orchestrates specialized agents",
+      "llm_model": "claude-3-5-haiku-20241022",
+      "temperature": 0
+    },
+    "test_case_generator": {
+      "description": "Test case generator agent - generates test cases from OpenAPI specifications",
+      "module": "test_case_generator",
+      "function": "generate_tests",
+      "output_dir": "testcases",
+      "llm_model": "claude-3-5-sonnet-20241022",
+      "temperature": 0,
+      "capabilities": [
+        "Generate test cases from OpenAPI schema",
+        "Create comprehensive test scenarios",
+        "Support multiple test types (integration, system, component, regression, sanity)"
+      ]
+    },
+    "test_case_executor": {
+      "description": "Test case executor agent - executes test cases and generates reports",
+      "module": "test_case_executor",
+      "function": "execute_tests",
+      "llm_model": "claude-3-5-haiku-20241022",
+      "temperature": 0,
+      "capabilities": [
+        "Execute test cases by test type",
+        "Validate API responses",
+        "Generate JSON and HTML reports",
+        "Support all HTTP methods (GET, POST, PUT, PATCH, DELETE)",
+        "Handle authentication (basic, bearer, token)"
+      ]
+    }
+  }
+}
