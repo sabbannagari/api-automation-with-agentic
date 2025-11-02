@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{test_type}} Test Results Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+        }
+        /* Hide header when displayed in iframe */
+        body.in-iframe .report-header {
+            display: none;
+        }
+        body.in-iframe .summary-cards {
+            margin-top: 2rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-error { background-color: #fee2e2; color: #991b1b; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="testDashboard()">
+
+    <!-- Header -->
+    <div class="report-header gradient-bg text-white py-8 px-4 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🧪 {{test_type}} Test Results</h1>
+                    <p class="text-slate-200">Generated on {{formatted_timestamp}}</p>
+                </div>
+                <div class="bg-white/20 backdrop-blur rounded-lg px-6 py-3">
+                    <p class="text-sm text-slate-200">Test Type</p>
+                    <p class="text-2xl font-bold">{{test_type}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards max-w-7xl mx-auto px-4 -mt-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Tests</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-1">{{total_tests}}</p>
+                    </div>
+                    <div class="bg-sky-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in cursor-pointer" @click="filterTests('passed')" :class="{'ring-2 ring-green-500': activeFilter === 'passed'}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Passed</p>
+                        <p class="text-3xl font-bold text-green-600 mt-1">{{passed_tests}}</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in cursor-pointer" @click="filterTests('failed')" :class="{'ring-2 ring-red-500': activeFilter === 'failed'}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Failed</p>
+                        <p class="text-3xl font-bold text-red-600 mt-1">{{failed_tests}}</p>
+                    </div>
+                    <div class="bg-red-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Pass Rate</p>
+                        <p class="text-3xl font-bold text-sky-500 mt-1">{{pass_rate}}</p>
+                    </div>
+                    <div class="bg-sky-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="max-w-7xl mx-auto px-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Test Results Overview</h2>
+                <div class="chart-container">
+                    <canvas id="passFailChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Results by Endpoint</h2>
+                <div class="chart-container">
+                    <canvas id="endpointChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Historical Trend</h2>
+                <div class="chart-container">
+                    <canvas id="historyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Indicator -->
+    <div class="max-w-7xl mx-auto px-4 mb-4" x-show="activeFilter !== 'all'">
+        <div class="bg-sky-50 border-l-4 border-sky-400 p-4 rounded">
+            <div class="flex items-center justify-between">
+                <p class="text-sky-700">
+                    <span class="font-semibold">Filtered View:</span>
+                    Showing only <span x-text="activeFilter" class="font-bold"></span> tests
+                </p>
+                <button @click="filterTests('all')" class="text-sky-700 hover:text-sky-900 font-medium">
+                    Clear Filter ✕
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Results Details -->
+    <div class="max-w-7xl mx-auto px-4 pb-12">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Test Details</h2>
+            </div>
+
+            <div class="divide-y divide-gray-200">
+                <template x-for="(endpoint, index) in filteredEndpoints" :key="index">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <span class="px-3 py-1 text-xs font-bold rounded-full"
+                                      :class="{
+                                          'bg-blue-100 text-blue-800': endpoint.method === 'GET',
+                                          'bg-green-100 text-green-800': endpoint.method === 'POST',
+                                          'bg-yellow-100 text-yellow-800': endpoint.method === 'PUT',
+                                          'bg-red-100 text-red-800': endpoint.method === 'DELETE'
+                                      }"
+                                      x-text="endpoint.method">
+                                </span>
+                                <h3 class="text-lg font-semibold text-gray-800" x-text="endpoint.endpoint"></h3>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="badge badge-success" x-text="`✓ ${endpoint.passed}`"></span>
+                                <span class="badge badge-error" x-text="`✗ ${endpoint.failed}`"></span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <template x-for="(test, testIndex) in endpoint.tests" :key="testIndex">
+                                <div class="test-card border rounded-lg p-4 cursor-pointer"
+                                     :class="test.passed ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'"
+                                     @click="showTestDetails(test)">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <span x-show="test.passed" class="text-green-600">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </span>
+                                                <span x-show="!test.passed" class="text-red-600">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </span>
+                                                <h4 class="font-semibold" :class="test.passed ? 'text-green-800' : 'text-red-800'" x-text="test.test_name"></h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2" x-text="test.description"></p>
+                                            <div class="flex items-center space-x-4 text-xs">
+                                                <span class="text-gray-500">
+                                                    Expected: <span class="font-mono font-semibold" x-text="test.expected_status"></span>
+                                                </span>
+                                                <span :class="test.passed ? 'text-green-600' : 'text-red-600'">
+                                                    Got: <span class="font-mono font-semibold" x-text="test.actual_status"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <button class="text-gray-400 hover:text-gray-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Details Modal -->
+    <div class="modal" :class="{'active': selectedTest}" @click.self="closeModal()">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-auto" x-show="selectedTest">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-800">Test Details</h3>
+                <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6" x-show="selectedTest">
+                <div class="mb-6">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <span class="badge" :class="selectedTest?.passed ? 'badge-success' : 'badge-error'">
+                            <span x-text="selectedTest?.passed ? '✓ PASSED' : '✗ FAILED'"></span>
+                        </span>
+                    </div>
+                    <h4 class="text-2xl font-bold text-gray-800 mb-2" x-text="selectedTest?.test_name"></h4>
+                    <p class="text-gray-600" x-text="selectedTest?.description"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-500 mb-1">Method</p>
+                        <p class="font-mono font-semibold" x-text="selectedTest?.method"></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-500 mb-1">Endpoint</p>
+                        <p class="font-mono font-semibold text-sm" x-text="selectedTest?.endpoint"></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-500 mb-1">Expected Status</p>
+                        <p class="font-mono font-semibold" x-text="selectedTest?.expected_status"></p>
+                    </div>
+                    <div class="rounded-lg p-4" :class="selectedTest?.passed ? 'bg-green-50' : 'bg-red-50'">
+                        <p class="text-sm text-gray-500 mb-1">Actual Status</p>
+                        <p class="font-mono font-semibold" :class="selectedTest?.passed ? 'text-green-700' : 'text-red-700'" x-text="selectedTest?.actual_status"></p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h5 class="font-semibold text-gray-800 mb-2">Details</h5>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-700" x-text="selectedTest?.details"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="font-semibold text-gray-800 mb-2">Response Body</h5>
+                    <div class="bg-gray-900 rounded-lg p-4 overflow-auto">
+                        <pre class="text-sm text-green-400 font-mono" x-text="JSON.stringify(selectedTest?.response_body, null, 2)"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data injected by Python
+        const TEST_DATA = {{test_data}};
+        const ENDPOINT_DATA = {{endpoint_data}};
+        const HISTORY_LABELS = {{history_labels}};
+        const HISTORY_PASSED = {{history_passed}};
+        const HISTORY_FAILED = {{history_failed}};
+
+        function testDashboard() {
+            return {
+                activeFilter: 'all',
+                selectedTest: null,
+                allEndpoints: ENDPOINT_DATA,
+
+                get filteredEndpoints() {
+                    if (this.activeFilter === 'all') {
+                        return this.allEndpoints;
+                    }
+                    return this.allEndpoints.map(endpoint => ({
+                        ...endpoint,
+                        tests: endpoint.tests.filter(test =>
+                            this.activeFilter === 'passed' ? test.passed : !test.passed
+                        )
+                    })).filter(endpoint => endpoint.tests.length > 0);
+                },
+
+                filterTests(filter) {
+                    this.activeFilter = filter;
+                },
+
+                showTestDetails(test) {
+                    this.selectedTest = test;
+                },
+
+                closeModal() {
+                    this.selectedTest = null;
+                }
+            }
+        }
+
+        // Detect if page is in an iframe and add class to body
+        if (window.self !== window.top) {
+            document.body.classList.add('in-iframe');
+        }
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pass/Fail Pie Chart
+            const passFailCtx = document.getElementById('passFailChart').getContext('2d');
+            new Chart(passFailCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Passed', 'Failed'],
+                    datasets: [{
+                        data: [{{passed_tests}}, {{failed_tests}}],
+                        backgroundColor: ['rgb(34, 197, 94)', 'rgb(239, 68, 68)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Inter', size: 14 }, padding: 20 }
+                        }
+                    }
+                }
+            });
+
+            // Endpoint Breakdown Chart
+            const endpointCtx = document.getElementById('endpointChart').getContext('2d');
+            new Chart(endpointCtx, {
+                type: 'bar',
+                data: {
+                    labels: ENDPOINT_DATA.map(e => `${e.method} ${e.endpoint}`),
+                    datasets: [
+                        {
+                            label: 'Passed',
+                            data: ENDPOINT_DATA.map(e => e.passed),
+                            backgroundColor: 'rgb(34, 197, 94)',
+                        },
+                        {
+                            label: 'Failed',
+                            data: ENDPOINT_DATA.map(e => e.failed),
+                            backgroundColor: 'rgb(239, 68, 68)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, ticks: { font: { family: 'Inter', size: 11 } } },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', size: 12 } } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 14 }, padding: 20 } }
+                    }
+                }
+            });
+
+            // Historical Trend Chart
+            const historyCtx = document.getElementById('historyChart').getContext('2d');
+            new Chart(historyCtx, {
+                type: 'line',
+                data: {
+                    labels: HISTORY_LABELS,
+                    datasets: [
+                        {
+                            label: 'Passed',
+                            data: HISTORY_PASSED,
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Failed',
+                            data: HISTORY_FAILED,
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', size: 12 } } },
+                        x: { ticks: { font: { family: 'Inter', size: 11 } } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 14 }, padding: 20 } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
