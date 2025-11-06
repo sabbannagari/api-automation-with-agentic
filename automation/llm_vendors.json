@@ -1,0 +1,56 @@
+{
+  "anthropic": {
+    "env_var": "ANTHROPIC_API_KEY",
+    "models": [
+      "claude-sonnet-4-5-20250929",
+      "claude-haiku-4-5-20251001",
+      "claude-opus-4-1-20250805",
+      "claude-3-opus-20240229",
+      "claude-3-sonnet-20240229",
+      "claude-3-haiku-20240307"
+    ],
+    "console_url": "https://console.anthropic.com/settings/keys"
+  },
+  "openai": {
+    "env_var": "OPENAI_API_KEY",
+    "models": [
+      "gpt-4-turbo",
+      "gpt-4",
+      "gpt-4-32k",
+      "gpt-3.5-turbo",
+      "gpt-3.5-turbo-16k"
+    ],
+    "console_url": "https://platform.openai.com/api-keys"
+  },
+  "google": {
+    "env_var": "GOOGLE_API_KEY",
+    "models": [
+      "gemini-1.5-pro",
+      "gemini-1.5-flash",
+      "gemini-pro",
+      "gemini-pro-vision"
+    ],
+    "console_url": "https://makersuite.google.com/app/apikey"
+  },
+  "azure": {
+    "env_var": "AZURE_OPENAI_API_KEY",
+    "models": [
+      "gpt-4",
+      "gpt-35-turbo"
+    ],
+    "console_url": "https://portal.azure.com",
+    "additional_env_vars": [
+      "AZURE_OPENAI_ENDPOINT",
+      "AZURE_OPENAI_DEPLOYMENT"
+    ]
+  },
+  "cohere": {
+    "env_var": "COHERE_API_KEY",
+    "models": [
+      "command",
+      "command-light",
+      "command-nightly"
+    ],
+    "console_url": "https://dashboard.cohere.com/api-keys"
+  }
+}

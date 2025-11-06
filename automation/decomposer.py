@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from anthropic import Anthropic
+from llm_client import LLMClient
 from utils import Utils
 
 # ===== Load global config =====
@@ -11,14 +11,16 @@ global_config = Utils.read_config()
 script_name = Utils.get_script_name(__file__)
 agent_config = Utils.get_agent_config(global_config, script_name)
 
+LLM_VENDOR = agent_config.get("llm_vendor", "anthropic")
 LLM_MODEL = agent_config.get("llm_model", "claude-3-haiku-20240307")
 TEMPERATURE = agent_config.get("temperature", 0)
 
 # Load decomposer prompt from file
 DECOMPOSER_PROMPT = Utils.read_prompt(script_name)
 
-# ===== Initialize Anthropic client =====
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+# ===== Initialize LLM client =====
+# Validation happens inside LLMClient constructor
+client = LLMClient(vendor=LLM_VENDOR, model=LLM_MODEL, temperature=TEMPERATURE)
 
 
 def get_available_agents():
@@ -117,17 +119,11 @@ def decompose_task_with_llm(task_description):
 
     try:
         # Ask LLM to decompose the task
-        resp = client.messages.create(
-            model=LLM_MODEL,
-            max_tokens=2048,
-            system=DECOMPOSER_PROMPT,
-            messages=[
-                {"role": "user", "content": json.dumps(context, indent=2)}
-            ],
-            temperature=TEMPERATURE
-        )
-
-        response_text = resp.content[0].text.strip()
+        response_text = client.generate(
+            system_prompt=DECOMPOSER_PROMPT,
+            user_message=json.dumps(context, indent=2),
+            max_tokens=2048
+        ).strip()
 
         # Parse LLM response
         plan = parse_llm_response(response_text)
@@ -149,7 +145,16 @@ def decompose_task_with_llm(task_description):
         return plan
 
     except Exception as e:
-        print(f"⚠️  LLM decomposition failed: {str(e)}")
+        error_msg = str(e)
+
+        # Check if it's an authentication error - fail immediately
+        if "authentication" in error_msg.lower() or "api_key" in error_msg.lower() or "auth_token" in error_msg.lower():
+            print(f"❌ Authentication Error: {error_msg}")
+            print(f"   Please set the ANTHROPIC_API_KEY environment variable")
+            raise SystemExit(1)
+
+        # For other errors, use fallback
+        print(f"⚠️  LLM decomposition failed: {error_msg}")
         print(f"   Using fallback heuristic...")
         return fallback_decompose(task_description)
 

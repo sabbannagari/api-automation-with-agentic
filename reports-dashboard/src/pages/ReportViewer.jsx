@@ -55,6 +55,7 @@ function ReportViewer() {
           src={reportUrl}
           className="w-full h-full border-0"
           title={`${testType} Test Report ${reportId}`}
+          sandbox="allow-scripts allow-same-origin allow-popups"
         />
       </div>
     </div>

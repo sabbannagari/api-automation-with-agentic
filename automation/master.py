@@ -4,6 +4,10 @@ import argparse
 from datetime import datetime
 from utils import Utils
 
+# ===== Validate authentication early =====
+# Validate all LLM vendor API keys used in config
+Utils.validate_llm_auth()
+
 # ===== Load global config =====
 global_config = Utils.read_config()
 

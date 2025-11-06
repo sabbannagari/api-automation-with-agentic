@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -6,6 +7,145 @@ from requests.auth import HTTPBasicAuth
 
 class Utils:
     """Utility class for common operations across agents"""
+
+    @staticmethod
+    def validate_anthropic_auth():
+        """
+        DEPRECATED: Use validate_llm_auth() instead
+
+        Validate that ANTHROPIC_API_KEY is set in environment
+
+        Exits the program with error message if not set
+
+        Returns:
+            str: The API key if valid
+        """
+        # Delegate to the new multi-vendor validation for backward compatibility
+        return Utils.validate_llm_auth(vendor="anthropic")
+
+    @staticmethod
+    def validate_llm_auth(vendor: str = None, config_path: str = "config.json"):
+        """
+        Validate that required API key(s) are set for LLM vendors used in config
+
+        Args:
+            vendor: Specific vendor to validate (optional). If None, validates all vendors in config
+            config_path: Path to config.json
+
+        Exits the program with error message if any required key is not set
+
+        Returns:
+            dict: Dictionary of vendor -> API key mappings
+        """
+        # Load LLM vendors configuration
+        llm_vendors_path = os.path.join(os.path.dirname(__file__), "llm_vendors.json")
+        with open(llm_vendors_path, 'r') as f:
+            vendors_config = json.load(f)
+
+        # If specific vendor provided, validate only that one
+        if vendor:
+            vendors_to_check = {vendor.lower(): vendors_config.get(vendor.lower())}
+            if not vendors_to_check[vendor.lower()]:
+                print(f"\n❌ Unknown vendor: {vendor}")
+                print(f"   Supported vendors: {', '.join(vendors_config.keys())}\n")
+                sys.exit(1)
+        else:
+            # Load config and collect all vendors used by agents
+            try:
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+            except FileNotFoundError:
+                print(f"\n❌ Configuration file not found: {config_path}\n")
+                sys.exit(1)
+
+            vendors_to_check = {}
+            for agent_name, agent_config in config.get("agents", {}).items():
+                agent_vendor = agent_config.get("llm_vendor")
+                if agent_vendor and agent_vendor.lower() in vendors_config:
+                    vendors_to_check[agent_vendor.lower()] = vendors_config[agent_vendor.lower()]
+
+        # Validate API keys for each vendor
+        validated_keys = {}
+        missing_vendors = []
+
+        for vendor_name, vendor_info in vendors_to_check.items():
+            primary_key = vendor_info["env_var"]
+            api_key = os.getenv(primary_key)
+
+            if not api_key or api_key.strip() == "":
+                missing_vendors.append({
+                    "vendor": vendor_name,
+                    "env_var": primary_key,
+                    "console_url": vendor_info["console_url"],
+                    "additional_vars": vendor_info.get("additional_env_vars", [])
+                })
+            else:
+                # Check additional env vars if required (e.g., Azure)
+                if "additional_env_vars" in vendor_info:
+                    missing_additional = []
+                    for var in vendor_info["additional_env_vars"]:
+                        if not os.getenv(var):
+                            missing_additional.append(var)
+
+                    if missing_additional:
+                        missing_vendors.append({
+                            "vendor": vendor_name,
+                            "env_var": None,
+                            "missing_additional": missing_additional,
+                            "console_url": vendor_info["console_url"]
+                        })
+                    else:
+                        validated_keys[vendor_name] = api_key
+                else:
+                    validated_keys[vendor_name] = api_key
+
+        # If any vendors have missing keys, show error and exit
+        if missing_vendors:
+            print("\n" + "="*80)
+            print("❌ LLM AUTHENTICATION ERROR")
+            print("="*80)
+            print("🔑 Missing required API keys for the following LLM vendors:\n")
+
+            for missing in missing_vendors:
+                vendor = missing["vendor"].upper()
+
+                if missing.get("env_var"):
+                    # Missing primary key
+                    print(f"   {vendor}:")
+                    print(f"   - Missing: {missing['env_var']}")
+                    print(f"   - Get your key from: {missing['console_url']}")
+
+                    if missing.get("additional_vars"):
+                        print(f"   - Also required: {', '.join(missing['additional_vars'])}")
+                    print()
+                elif missing.get("missing_additional"):
+                    # Has primary key but missing additional vars
+                    print(f"   {vendor}:")
+                    print(f"   - Missing additional variables: {', '.join(missing['missing_additional'])}")
+                    print(f"   - See documentation: {missing['console_url']}")
+                    print()
+
+            print("📝 Set the required environment variables using one of these methods:\n")
+            print("   Option 1 - Export in current session:")
+            for missing in missing_vendors:
+                if missing.get("env_var"):
+                    print(f"   export {missing['env_var']}='your-api-key-here'")
+                if missing.get("missing_additional"):
+                    for var in missing["missing_additional"]:
+                        print(f"   export {var}='your-value-here'")
+
+            print("\n   Option 2 - Add to .env file in project root:")
+            for missing in missing_vendors:
+                if missing.get("env_var"):
+                    print(f"   {missing['env_var']}=your-api-key-here")
+                if missing.get("missing_additional"):
+                    for var in missing["missing_additional"]:
+                        print(f"   {var}=your-value-here")
+
+            print("\n" + "="*80 + "\n")
+            sys.exit(1)
+
+        return validated_keys if not vendor else validated_keys.get(vendor.lower())
 
     @staticmethod
     def read_config(config_path="config.json"):
@@ -418,10 +558,21 @@ class Utils:
         html_content = html_content.replace('{{passed_tests}}', str(summary.get('passed', 0)))
         html_content = html_content.replace('{{failed_tests}}', str(summary.get('failed', 0)))
         html_content = html_content.replace('{{pass_rate}}', summary.get('pass_rate', '0%'))
-        html_content = html_content.replace('{{test_data}}', json.dumps(results))
-        html_content = html_content.replace('{{endpoint_data}}', json.dumps(list(endpoints.values())))
-        html_content = html_content.replace('{{history_labels}}', json.dumps(history_labels))
-        html_content = html_content.replace('{{history_passed}}', json.dumps(history_passed))
-        html_content = html_content.replace('{{history_failed}}', json.dumps(history_failed))
+
+        # Escape JSON for safe embedding in HTML <script> tags
+        # json.dumps already properly escapes strings for JSON, but we need to escape script tags
+        def escape_for_js(obj):
+            json_str = json.dumps(obj)
+            # Escape script tags to prevent them from breaking out of the script block
+            # The browser HTML parser will see </script> even inside JSON strings
+            json_str = json_str.replace('</script>', '<\\/script>')
+            json_str = json_str.replace('<script>', '<\\script>')
+            return json_str
+
+        html_content = html_content.replace('{{test_data}}', escape_for_js(results))
+        html_content = html_content.replace('{{endpoint_data}}', escape_for_js(list(endpoints.values())))
+        html_content = html_content.replace('{{history_labels}}', escape_for_js(history_labels))
+        html_content = html_content.replace('{{history_passed}}', escape_for_js(history_passed))
+        html_content = html_content.replace('{{history_failed}}', escape_for_js(history_failed))
 
         return html_content

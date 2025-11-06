@@ -4,6 +4,9 @@ from datetime import datetime
 from anthropic import Anthropic
 from utils import Utils
 
+# ===== Validate authentication early =====
+Utils.validate_anthropic_auth()
+
 # ===== Load global config =====
 global_config = Utils.read_config()
 
@@ -132,7 +135,7 @@ def execute_tests(testcases_dir=TESTCASES_DIR, base_url=BASE_URL, auth_type=AUTH
     test_types = []
     if test_type:
         # Run specific test type
-        test_type_dir = os.path.join(testcases_dir, test_type, "testcases")
+        test_type_dir = os.path.join(testcases_dir, test_type)
         if os.path.exists(test_type_dir):
             test_types.append((test_type, test_type_dir))
         else:
@@ -141,7 +144,7 @@ def execute_tests(testcases_dir=TESTCASES_DIR, base_url=BASE_URL, auth_type=AUTH
     else:
         # Run all test types
         for tt in ['integration', 'system', 'component', 'regression', 'sanity']:
-            tt_dir = os.path.join(testcases_dir, tt, "testcases")
+            tt_dir = os.path.join(testcases_dir, tt)
             if os.path.exists(tt_dir) and os.listdir(tt_dir):
                 test_types.append((tt, tt_dir))
 
