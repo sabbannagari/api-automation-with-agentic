@@ -61,12 +61,44 @@ Interactive web dashboard for browsing test results.
 
 ## Running Tests
 
-### Execute All Test Types
+### Using Master Agent (Recommended)
+
+The master agent intelligently interprets your task and executes the appropriate operations:
+
+**Generate test cases only:**
+```bash
+python master.py --task "generate tests"
+python master.py --task "create test cases"
+```
+
+**Execute existing test cases only:**
+```bash
+python master.py --task "execute tests"
+python master.py --task "run testcases"
+```
+
+**Generate and execute (both):**
+```bash
+python master.py --task "generate and run tests"
+python master.py --task "create and execute testcases"
+```
+
+**Execute specific test type:**
+```bash
+python master.py --task "execute integration tests"
+python master.py --task "run system testcases"
+```
+
+### Direct Execution (Alternative)
+
+You can also run agents directly:
+
+**Execute All Test Types:**
 ```bash
 python test_case_executor.py
 ```
 
-### Execute Specific Test Type
+**Execute Specific Test Type:**
 ```bash
 python test_case_executor.py --test-type integration
 python test_case_executor.py --test-type system
@@ -75,9 +107,9 @@ python test_case_executor.py --test-type regression
 python test_case_executor.py --test-type sanity
 ```
 
-### Test Options
+**Generate Test Cases:**
 ```bash
-python test_case_executor.py --help
+python test_case_generator.py
 ```
 
 ## Test Organization
@@ -105,21 +137,53 @@ testcases/
 
 ## Test Case Format
 
-Test cases are defined in JSON format:
+Test cases are defined in JSON format with the following structure:
 
 ```json
 {
-  "test_name": "Get all users",
   "endpoint": "/users",
   "method": "GET",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "expected_status_code": 200,
-  "validate_response": {
-    "type": "array",
-    "min_length": 1
-  }
+  "testCases": [
+    {
+      "name": "Get all users successfully",
+      "description": "Validates that the API returns all users",
+      "enabled": true,
+      "testCategory": "happy_path",
+      "requestBody": {},
+      "params": {},
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "expectedStatusCode": 200,
+      "expectedResponse": {
+        "type": "array"
+      }
+    }
+  ]
+}
+```
+
+**Key Fields:**
+- `enabled`: Boolean flag to control test execution (default: true)
+  - `true` = test will be executed
+  - `false` = test will be skipped
+- `name`: Descriptive test name
+- `description`: What the test validates
+- `testCategory`: Type of test (happy_path, validation, edge_case, error_scenario, security, etc.)
+- `requestBody`: Request payload for POST/PUT/PATCH
+- `params`: Query or path parameters
+- `expectedStatusCode`: Expected HTTP status code
+- `expectedResponse`: Expected response structure
+
+### Disabling Test Cases
+
+To skip a test case without deleting it, set `enabled: false`:
+
+```json
+{
+  "name": "Test that should be skipped",
+  "enabled": false,
+  ...
 }
 ```
 
@@ -203,6 +267,15 @@ npm run dev
 
 ## Features
 
+### Intelligent Task Orchestration
+- **Master Agent**: Single entry point that intelligently interprets natural language tasks
+- **Decomposer Agent**: Automatically breaks down tasks into subtasks and selects appropriate agents
+- **Execution Modes**:
+  - Generate only: Creates test cases without execution
+  - Execute only: Runs existing test cases
+  - Both: Generates and executes in sequence
+- **Flexible Task Syntax**: Understands various task descriptions naturally
+
 ### Test Execution
 - Execute tests by type (integration, system, component, regression, sanity)
 - Automatic JSON and HTML report generation
@@ -210,6 +283,19 @@ npm run dev
 - Support for various HTTP methods (GET, POST, PUT, DELETE)
 - Request/response validation
 - Parameter substitution (path and query params)
+- **Test Case Control**: Enable/disable individual test cases with `enabled` flag
+- **Selective Execution**: Only enabled test cases are executed (default: true)
+
+### Test Generation
+- **AI-Powered**: LLM-based test case generation from OpenAPI specifications
+- Supports functional specification integration
+- Generates comprehensive test coverage:
+  - Happy path tests
+  - Validation tests
+  - Security tests
+  - Edge cases
+  - Error scenarios
+- All generated test cases include `enabled: true` by default
 
 ### Reports Dashboard
 - Real-time statistics across all test types

@@ -153,4 +153,15 @@ Decision Guidelines:
   - "run sanity testcases" → task should be "Execute sanity test cases and validate results"
   - "execute testcases" (no specific type) → task should be "Execute all test cases and validate results"
 
+**Execution Mode Detection**: Intelligently determine what the user wants:
+- **Generate Only**: Keywords like "generate", "create", "build" test cases WITHOUT "run" or "execute"
+  - Example: "generate tests", "create test cases", "build testcases"
+  - Use only test_case_generator agent
+- **Execute Only**: Keywords like "run", "execute", "test" WITHOUT "generate" or "create"
+  - Example: "execute tests", "run testcases", "test the API"
+  - Use only test_case_executor agent
+- **Both (Generate + Execute)**: Contains BOTH generation and execution keywords
+  - Example: "generate and run tests", "create and execute testcases", "build and test"
+  - Use both test_case_generator and test_case_executor agents in sequence
+
 Be intelligent, adaptive, and thorough in your task decomposition!
