@@ -193,6 +193,7 @@ Return a JSON array where each element represents test cases for one endpoint:
       {
         "name": "Descriptive test name",
         "description": "What this test validates",
+        "enabled": true,
         "functionalSpecReference": "BR-3.2.1: Business rule description",
         "codeReference": "path/to/file.py:function_name",
         "testCategory": "business_logic | happy_path | validation | edge_case | error_scenario | security | performance | load | stress | reliability | high_availability | disaster_recovery",
@@ -211,6 +212,7 @@ Return a JSON array where each element represents test cases for one endpoint:
 
 - **name**: Clear, descriptive test name (e.g., "Create user with valid email succeeds")
 - **description**: Detailed explanation of what is being validated and why
+- **enabled**: Boolean flag to control test execution (true = execute, false = skip). Default is true. All generated test cases should have enabled: true
 - **functionalSpecReference**: Reference to business rule, requirement, or acceptance criteria from functional spec (if applicable)
 - **codeReference**: Reference to relevant code function/class that implements this logic (if applicable)
 - **testCategory**: Category of test (business_logic, happy_path, validation, edge_case, error_scenario, security, performance, load, stress, reliability, high_availability, disaster_recovery)
