@@ -42,5 +42,27 @@ def validate_token(token: str) -> bool:
     Returns:
         bool: True if token is valid
     """
-    # TODO: Implement real token validation
+    # TODO: Implement real token validation with expiration
+    if not token:
+        return False
+
+    # Check token format
+    if len(token) < 6:
+        return False
+
     return token == "abc123"
+
+
+def hash_password(password: str) -> str:
+    """
+    Hash a password for secure storage
+
+    Args:
+        password: Plain text password
+
+    Returns:
+        str: Hashed password
+    """
+    # TODO: Use proper password hashing (bcrypt, argon2)
+    import hashlib
+    return hashlib.sha256(password.encode()).hexdigest()
