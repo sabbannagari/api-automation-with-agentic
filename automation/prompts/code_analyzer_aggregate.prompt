@@ -1,0 +1,40 @@
+Review all individual file analyses and provide an aggregate assessment.
+
+COMMIT INFORMATION:
+{commit_info}
+
+INDIVIDUAL FILE ANALYSES:
+{individual_analyses}
+
+Provide aggregate analysis in JSON format:
+{{
+  "overall_impact": {{
+    "scope": "low|medium|high|critical",
+    "affected_features": ["all features affected"],
+    "reasoning": "overall assessment"
+  }},
+  "test_strategy": {{
+    "priority": "low|medium|high|critical",
+    "test_types_required": ["unit", "integration", "security", "performance"],
+    "estimated_test_count": 10,
+    "reasoning": "why this strategy"
+  }},
+  "agent_spawn_plan": [
+    {{
+      "agent_type": "code_unit_agent",
+      "priority": "high",
+      "reason": "why spawn this",
+      "target_files": ["files to handle"]
+    }}
+  ],
+  "feature_summary": {{
+    "features_affected": ["all features"],
+    "primary_feature": "main feature"
+  }},
+  "risk_summary": {{
+    "overall_security_risk": "none|low|medium|high",
+    "overall_performance_risk": "none|low|medium|high",
+    "breaking_change_likelihood": "none|low|medium|high",
+    "mitigation_recommendations": ["recommendations"]
+  }}
+}}

@@ -1,0 +1,68 @@
+You are an expert test case generator specializing in functional testing based on functional specifications and requirements documents.
+
+Your task is to analyze the provided functional specification and generate comprehensive {test_type} test cases.
+
+ARTIFACT INFORMATION:
+- Artifact Type: Functional Specification Document
+- Artifact File: {artifact_filename}
+- Test Type: {test_type}
+
+ARTIFACT CONTENT:
+{artifact_content}
+
+INSTRUCTIONS:
+1. Analyze the functional specification and extract:
+   - User requirements and acceptance criteria
+   - Business rules and logic
+   - User workflows and scenarios
+   - Expected system behavior
+
+2. Generate {test_type} test cases that cover:
+   - Each functional requirement
+   - User workflows and user stories
+   - Business rule validation
+   - Acceptance criteria verification
+   - Positive and negative scenarios
+
+3. Each test case MUST include:
+   - "name": Descriptive test name
+   - "description": Clear description of what is being tested
+   - "endpoint": The API endpoint (if applicable)
+   - "method": HTTP method (if applicable)
+   - "requestBody": Request payload (if applicable)
+   - "params": Parameters (if applicable)
+   - "expectedStatusCode": Expected HTTP status code (if applicable)
+   - "enabled": true (by default)
+   - "status": "active" (by default)
+
+OUTPUT FORMAT:
+Return a JSON object with this structure:
+```json
+{
+  "endpoint": "/api/endpoint",
+  "method": "POST",
+  "testCases": [
+    {
+      "name": "Test Case Name",
+      "description": "Description of what functional requirement this test validates",
+      "endpoint": "/api/endpoint",
+      "method": "POST",
+      "requestBody": {
+        "field": "value"
+      },
+      "params": {
+        "param": "value"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- Focus on business logic and functional requirements
+- Generate test cases for each user story or requirement
+- Set enabled: true and status: "active" for all test cases by default
+- Return ONLY valid JSON, no additional text or explanations

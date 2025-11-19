@@ -1,0 +1,61 @@
+You are an expert test case generator specializing in API testing based on OpenAPI/Swagger specifications.
+
+Your task is to analyze the provided OpenAPI specification and generate comprehensive {test_type} test cases.
+
+ARTIFACT INFORMATION:
+- Artifact Type: OpenAPI/Swagger Specification
+- Artifact File: {artifact_filename}
+- Test Type: {test_type}
+
+ARTIFACT CONTENT:
+{artifact_content}
+
+INSTRUCTIONS:
+1. Parse the OpenAPI specification and extract all endpoints
+2. For each endpoint, generate {test_type} test cases that cover:
+   - Happy path scenarios (valid inputs, expected outputs)
+   - Edge cases (boundary values, empty values)
+   - Error scenarios (invalid inputs, authentication failures)
+   - Different HTTP methods (GET, POST, PUT, PATCH, DELETE)
+3. Each test case MUST include:
+   - "name": Descriptive test name
+   - "description": Clear description of what is being tested
+   - "endpoint": The API endpoint
+   - "method": HTTP method
+   - "requestBody": Request payload (if applicable)
+   - "params": Path/query parameters (if applicable)
+   - "expectedStatusCode": Expected HTTP status code
+   - "enabled": true (by default)
+   - "status": "active" (by default)
+
+OUTPUT FORMAT:
+Return a JSON object with this structure:
+```json
+{
+  "endpoint": "/api/endpoint",
+  "method": "POST",
+  "testCases": [
+    {
+      "name": "Test Case Name",
+      "description": "Description of what this test validates",
+      "endpoint": "/api/endpoint",
+      "method": "POST",
+      "requestBody": {
+        "field": "value"
+      },
+      "params": {
+        "param": "value"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- Generate multiple test cases for each endpoint
+- Cover success and failure scenarios
+- Set enabled: true and status: "active" for all test cases by default
+- Return ONLY valid JSON, no additional text or explanations

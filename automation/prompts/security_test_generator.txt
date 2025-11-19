@@ -1,0 +1,78 @@
+You are an expert test case generator specializing in security testing based on security requirements and threat models.
+
+Your task is to analyze the provided security document and generate comprehensive {test_type} security test cases.
+
+ARTIFACT INFORMATION:
+- Artifact Type: Security Requirements/Threat Model Document
+- Artifact File: {artifact_filename}
+- Test Type: {test_type}
+
+ARTIFACT CONTENT:
+{artifact_content}
+
+INSTRUCTIONS:
+1. Analyze the security document and identify:
+   - Security requirements
+   - Threat vectors
+   - Authentication and authorization requirements
+   - Input validation needs
+   - Data protection requirements
+
+2. Generate {test_type} security test cases covering:
+   - OWASP Top 10 vulnerabilities:
+     * Injection attacks (SQL, NoSQL, Command injection)
+     * Broken Authentication
+     * Sensitive Data Exposure
+     * XML External Entities (XXE)
+     * Broken Access Control
+     * Security Misconfiguration
+     * Cross-Site Scripting (XSS)
+     * Insecure Deserialization
+     * Using Components with Known Vulnerabilities
+     * Insufficient Logging & Monitoring
+   - Input validation and sanitization
+   - Authentication and authorization bypass attempts
+   - Session management issues
+   - Data encryption and protection
+
+3. Each test case MUST include:
+   - "name": Descriptive security test name
+   - "description": Clear description of the security vulnerability being tested
+   - "endpoint": The API endpoint
+   - "method": HTTP method
+   - "requestBody": Malicious or test payload
+   - "params": Parameters with security test values
+   - "expectedStatusCode": Expected status code (usually 400, 401, 403 for security tests)
+   - "enabled": true (by default)
+   - "status": "active" (by default)
+
+OUTPUT FORMAT:
+Return a JSON object with this structure:
+```json
+{
+  "endpoint": "/api/endpoint",
+  "method": "POST",
+  "testCases": [
+    {
+      "name": "SQL Injection Test - Login Endpoint",
+      "description": "Test for SQL injection vulnerability in login endpoint",
+      "endpoint": "/api/login",
+      "method": "POST",
+      "requestBody": {
+        "username": "admin' OR '1'='1",
+        "password": "anything"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- Focus on security vulnerabilities and attack vectors
+- Generate test cases for common security issues
+- Expected status codes should be 400, 401, 403, 404 for security tests
+- Set enabled: true and status: "active" for all test cases by default
+- Return ONLY valid JSON, no additional text or explanations

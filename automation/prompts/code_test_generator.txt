@@ -1,0 +1,127 @@
+You are an expert test case generator specializing in test generation from source code analysis.
+
+Your task is to analyze the provided source code and generate comprehensive {test_type} test cases by understanding code flows, method calls, and functional behavior.
+
+ARTIFACT INFORMATION:
+- Artifact Type: Source Code File
+- Artifact File: {artifact_filename}
+- Test Type: {test_type}
+
+ARTIFACT CONTENT:
+{artifact_content}
+
+INSTRUCTIONS:
+1. Analyze the source code deeply and identify:
+   - Functions/methods and their signatures
+   - Code flow and execution paths
+   - Method call chains and dependencies
+   - API endpoints (if present)
+   - Input parameters and data types
+   - Expected outputs and return types
+   - Error handling and edge cases
+   - Business logic and workflows
+   - Integration points between functions
+
+2. Trace the code flow:
+   - Identify entry points (API endpoints, main functions)
+   - Follow the execution path through method calls
+   - Understand data transformations at each step
+   - Identify decision points (if/else, switch statements)
+   - Map out the complete functional workflow
+
+3. Generate {test_type} functional test cases covering:
+   - End-to-end workflows (entry point → through all method calls → final output)
+   - Each significant function/method with valid inputs
+   - Complete user scenarios based on code flow
+   - Integration between different functions/modules
+   - Boundary conditions and edge cases for each flow
+   - Error handling at different points in the flow
+   - Different code paths and branches
+   - API endpoints with complete request-response cycles
+
+4. Each test case MUST include:
+   - "name": Descriptive test name indicating the flow being tested
+   - "description": Clear description of the complete flow, method calls involved, and expected behavior
+   - "endpoint": The API endpoint (if applicable)
+   - "method": HTTP method (if applicable)
+   - "requestBody": Request payload (if applicable)
+   - "params": Parameters (if applicable)
+   - "expectedStatusCode": Expected HTTP status code (if applicable)
+   - "flowDescription": Description of the code execution flow
+   - "methodsCalled": List of methods/functions called in this flow
+   - "enabled": true (by default)
+   - "status": "active" (by default)
+
+OUTPUT FORMAT:
+Return a JSON object with this structure:
+```json
+{
+  "endpoint": "/api/endpoint",
+  "method": "POST",
+  "testCases": [
+    {
+      "name": "Complete User Registration Flow - Valid Data",
+      "description": "Test complete user registration flow: validate input → check existing user → hash password → create user → send email → return success",
+      "endpoint": "/api/register",
+      "method": "POST",
+      "requestBody": {
+        "username": "newuser",
+        "email": "user@example.com",
+        "password": "SecurePass123"
+      },
+      "expectedStatusCode": 201,
+      "flowDescription": "Entry: register() → validate_input() → check_user_exists() → hash_password() → create_user_in_db() → send_welcome_email() → return success response",
+      "methodsCalled": ["register", "validate_input", "check_user_exists", "hash_password", "create_user_in_db", "send_welcome_email"],
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "User Registration Flow - Duplicate User Error",
+      "description": "Test registration flow when user already exists: validate input → check existing user → return error (flow stops at check_user_exists)",
+      "endpoint": "/api/register",
+      "method": "POST",
+      "requestBody": {
+        "username": "existinguser",
+        "email": "existing@example.com",
+        "password": "SecurePass123"
+      },
+      "expectedStatusCode": 409,
+      "flowDescription": "Entry: register() → validate_input() → check_user_exists() → STOP and return 409 error",
+      "methodsCalled": ["register", "validate_input", "check_user_exists"],
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- Trace complete execution flows through the code
+- Generate functional test cases that cover end-to-end workflows
+- Include both happy path and error path flows
+- Document which methods are called in each flow
+- Cover integration points between different functions
+- Test different branches and decision paths
+- Set enabled: true and status: "active" for all test cases by default
+- Return ONLY valid JSON, no additional text or explanations
+
+EXAMPLE FLOW ANALYSIS (TEACHING PATTERN):
+If code has:
+```
+def process_order(order_data):
+    validated = validate_order(order_data)
+    inventory_check = check_inventory(validated.items)
+    if inventory_check.available:
+        payment = process_payment(validated.total)
+        if payment.success:
+            ship_order(validated)
+            send_confirmation(validated.email)
+            return success_response()
+```
+
+Generate test cases for:
+1. Complete success flow: validate → check inventory (available) → process payment (success) → ship → send email → success
+2. Inventory unavailable flow: validate → check inventory (unavailable) → return error
+3. Payment failure flow: validate → check inventory (available) → process payment (failed) → return error
+
+Apply this same flow analysis pattern to the actual code in the artifact above.

@@ -65,83 +65,98 @@
     },
     "openapi_test_generator": {
       "description": "Generates test cases from OpenAPI specifications",
+      "module": "agents.openapi_agent",
+      "function": "generate_tests",
       "llm_vendor": "anthropic",
       "llm_model": "claude-sonnet-4-5-20250929",
       "temperature": 0,
       "max_tokens": 16000,
-      "prompt_file": "prompts/openapi_test_generator.txt"
+      "prompt_template": "prompts/openapi_test_generator.txt",
+      "capabilities": [
+        "Parse OpenAPI/Swagger specifications",
+        "Generate API test cases for all endpoints",
+        "Create test scenarios for different HTTP methods",
+        "Support authentication and authorization tests"
+      ]
     },
     "functional_test_generator": {
       "description": "Generates test cases from functional specifications",
+      "module": "agents.functional_agent",
+      "function": "generate_tests",
       "llm_vendor": "anthropic",
       "llm_model": "claude-sonnet-4-5-20250929",
       "temperature": 0.3,
       "max_tokens": 16000,
-      "prompt_file": "prompts/functional_test_generator.txt"
+      "prompt_template": "prompts/functional_test_generator.txt",
+      "capabilities": [
+        "Parse functional specification documents",
+        "Extract user requirements and acceptance criteria",
+        "Generate functional test scenarios",
+        "Create test cases for business logic validation"
+      ]
     },
     "security_test_generator": {
       "description": "Generates security test cases from security documents",
+      "module": "agents.security_agent",
+      "function": "generate_tests",
       "llm_vendor": "anthropic",
       "llm_model": "claude-sonnet-4-5-20250929",
       "temperature": 0,
       "max_tokens": 16000,
-      "prompt_file": "prompts/security_test_generator.txt"
+      "prompt_template": "prompts/security_test_generator.txt",
+      "capabilities": [
+        "Parse security requirements and threat models",
+        "Generate OWASP Top 10 test cases",
+        "Create authentication and authorization tests",
+        "Generate input validation and injection tests"
+      ]
     },
     "performance_test_generator": {
       "description": "Generates performance test cases from performance specs",
+      "module": "agents.performance_agent",
+      "function": "generate_tests",
       "llm_vendor": "anthropic",
       "llm_model": "claude-sonnet-4-5-20250929",
       "temperature": 0,
       "max_tokens": 16000,
-      "prompt_file": "prompts/performance_test_generator.txt"
+      "prompt_template": "prompts/performance_test_generator.txt",
+      "capabilities": [
+        "Parse performance requirements",
+        "Generate load and stress test scenarios",
+        "Create benchmark test cases",
+        "Generate scalability tests"
+      ]
     },
     "code_test_generator": {
       "description": "Generates test cases by analyzing source code",
+      "module": "agents.code_agent",
+      "function": "generate_tests",
       "llm_vendor": "anthropic",
       "llm_model": "claude-sonnet-4-5-20250929",
       "temperature": 0.2,
       "max_tokens": 16000,
-      "prompt_file": "prompts/code_test_generator.txt"
+      "prompt_template": "prompts/code_test_generator.txt",
+      "capabilities": [
+        "Analyze source code structure",
+        "Generate unit and integration tests",
+        "Create test cases for edge cases and error handling",
+        "Generate mock and stub requirements"
+      ]
     },
-    "code_analyzer_agent": {
-      "description": "Analyzes code changes and identifies features, test requirements, agents to spawn",
+    "test_case_executor": {
+      "description": "Test case executor agent - executes test cases and generates reports",
+      "module": "test_case_executor",
+      "function": "execute_tests",
       "llm_vendor": "anthropic",
-      "llm_model": "claude-sonnet-4-5-20250929",
-      "temperature": 0.3,
-      "max_tokens": 4000,
-      "prompt_file": "prompts/code_analyzer_system.txt"
-    },
-    "planner_agent": {
-      "description": "Creates execution plan and spawns specialized agents based on analysis",
-      "llm_vendor": "anthropic",
-      "llm_model": "claude-sonnet-4-5-20250929",
-      "temperature": 0.2,
-      "max_tokens": 4000,
-      "prompt_file": "prompts/planner_agent.txt"
-    },
-    "code_unit_agent": {
-      "description": "Generates unit tests for code functions/classes",
-      "llm_vendor": "anthropic",
-      "llm_model": "claude-sonnet-4-5-20250929",
-      "temperature": 0.2,
-      "max_tokens": 16000,
-      "prompt_file": "prompts/code_unit_agent.prompt"
-    },
-    "code_security_agent": {
-      "description": "Generates security tests for code (OWASP Top 10)",
-      "llm_vendor": "anthropic",
-      "llm_model": "claude-sonnet-4-5-20250929",
+      "llm_model": "claude-haiku-4-5-20251001",
       "temperature": 0,
-      "max_tokens": 16000,
-      "prompt_file": "prompts/code_security_agent.prompt"
-    },
-    "code_integration_agent": {
-      "description": "Generates integration tests for component interactions",
-      "llm_vendor": "anthropic",
-      "llm_model": "claude-sonnet-4-5-20250929",
-      "temperature": 0.2,
-      "max_tokens": 16000,
-      "prompt_file": "prompts/code_integration_agent.prompt"
+      "capabilities": [
+        "Execute test cases by test type",
+        "Validate API responses",
+        "Generate JSON and HTML reports",
+        "Support all HTTP methods (GET, POST, PUT, PATCH, DELETE)",
+        "Handle authentication (basic, bearer, token)"
+      ]
     }
   }
 }

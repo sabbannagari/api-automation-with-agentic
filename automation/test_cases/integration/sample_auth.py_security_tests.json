@@ -1,0 +1,1133 @@
+[
+  {
+    "test_id": "sec_001",
+    "test_name": "test_sql_injection_in_authentication",
+    "description": "Verify authentication system is protected against SQL injection attacks in username and password fields",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "SQL Injection",
+    "owasp_category": "A03:2021 - Injection",
+    "test_data": {
+      "attack_vectors": [
+        "' OR '1'='1",
+        "admin'--",
+        "' UNION SELECT * FROM users--",
+        "admin' OR 1=1--",
+        "'; DROP TABLE users--",
+        "1' AND '1'='1",
+        "' OR 'x'='x",
+        "admin' /*",
+        "' or 1=1#",
+        "') OR ('1'='1"
+      ],
+      "expected_behavior": "All SQL injection attempts should be rejected without exposing database errors"
+    },
+    "assertions": [
+      "Authentication fails for all SQL injection attempts",
+      "No database errors exposed in response",
+      "System logs security violation with attack vector details",
+      "Response time consistent to prevent timing attacks",
+      "No user enumeration possible through error messages"
+    ],
+    "severity": "critical",
+    "tags": [
+      "injection",
+      "authentication",
+      "owasp_top10",
+      "sql_injection"
+    ]
+  },
+  {
+    "test_id": "sec_002",
+    "test_name": "test_nosql_injection_in_authentication",
+    "description": "Verify authentication system is protected against NoSQL injection attacks",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "NoSQL Injection",
+    "owasp_category": "A03:2021 - Injection",
+    "test_data": {
+      "attack_vectors": [
+        "{\"$gt\": \"\"}",
+        "{\"$ne\": null}",
+        "{\"$regex\": \".*\"}",
+        "admin\", \"$gt\": \"\"",
+        "{\"username\": {\"$gt\": \"\"}, \"password\": {\"$gt\": \"\"}}",
+        "'; return true; var dummy='",
+        "{\"$where\": \"this.password.length > 0\"}"
+      ],
+      "expected_behavior": "All NoSQL injection attempts should be rejected"
+    },
+    "assertions": [
+      "Authentication fails for all NoSQL injection attempts",
+      "Input is properly sanitized before database queries",
+      "No MongoDB/NoSQL errors exposed",
+      "Query operators are escaped or rejected",
+      "Security event logged"
+    ],
+    "severity": "critical",
+    "tags": [
+      "injection",
+      "authentication",
+      "owasp_top10",
+      "nosql_injection"
+    ]
+  },
+  {
+    "test_id": "sec_003",
+    "test_name": "test_password_hashing_algorithm_strength",
+    "description": "Verify passwords are hashed using strong, industry-standard algorithms (bcrypt, argon2, scrypt)",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Cryptographic Failures",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "test_passwords": [
+        "TestPassword123!",
+        "AnotherSecure@Pass456",
+        "Complex#Password$789"
+      ],
+      "weak_algorithms_to_reject": [
+        "MD5",
+        "SHA1",
+        "plain_text"
+      ],
+      "expected_behavior": "Passwords must be hashed with bcrypt (cost >= 12), argon2id, or scrypt"
+    },
+    "assertions": [
+      "Password hashes are not reversible",
+      "Hash algorithm is bcrypt, argon2id, or scrypt",
+      "Bcrypt cost factor is >= 12",
+      "Each password produces unique hash (salt is unique)",
+      "Same password hashed twice produces different hashes",
+      "Hash length is appropriate for algorithm",
+      "No plain text passwords stored anywhere",
+      "Hash format follows standard (e.g., $2b$ for bcrypt)"
+    ],
+    "severity": "critical",
+    "tags": [
+      "cryptography",
+      "password_security",
+      "owasp_top10",
+      "authentication"
+    ]
+  },
+  {
+    "test_id": "sec_004",
+    "test_name": "test_weak_password_rejection",
+    "description": "Verify weak passwords are rejected according to security policy",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Weak Authentication",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "weak_passwords": [
+        "123456",
+        "password",
+        "admin",
+        "abc",
+        "12345678",
+        "qwerty",
+        "letmein",
+        "welcome",
+        "monkey",
+        "password123",
+        "abc123",
+        "admin123"
+      ],
+      "expected_behavior": "All weak passwords should be rejected with clear error message"
+    },
+    "assertions": [
+      "Password must be at least 12 characters long",
+      "Password must contain uppercase letter",
+      "Password must contain lowercase letter",
+      "Password must contain number",
+      "Password must contain special character",
+      "Common passwords are rejected",
+      "Dictionary words are rejected",
+      "Sequential characters rejected (e.g., 123456, abcdef)",
+      "Clear error message returned without exposing system details",
+      "No account created with weak password"
+    ],
+    "severity": "high",
+    "tags": [
+      "authentication",
+      "password_policy",
+      "owasp_top10"
+    ]
+  },
+  {
+    "test_id": "sec_005",
+    "test_name": "test_token_generation_security",
+    "description": "Verify authentication tokens are generated securely with sufficient entropy",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Insecure Token Generation",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "token_count": 1000,
+      "expected_behavior": "Tokens must be cryptographically random and unpredictable"
+    },
+    "assertions": [
+      "Tokens are at least 128 bits (16 bytes) of entropy",
+      "Tokens use cryptographically secure random number generator",
+      "No two tokens are identical in sample of 1000",
+      "Tokens are not sequential or predictable",
+      "Token format does not expose internal state",
+      "Tokens are URL-safe if used in URLs",
+      "Token generation uses secrets.token_urlsafe() or equivalent",
+      "No timestamp-based predictable tokens"
+    ],
+    "severity": "critical",
+    "tags": [
+      "token_security",
+      "cryptography",
+      "owasp_top10",
+      "authentication"
+    ]
+  },
+  {
+    "test_id": "sec_006",
+    "test_name": "test_token_validation_and_expiration",
+    "description": "Verify tokens are properly validated and expire appropriately",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Broken Authentication",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "valid_token_lifetime": 3600,
+      "test_scenarios": [
+        "expired_token",
+        "invalid_signature",
+        "tampered_token",
+        "revoked_token",
+        "malformed_token"
+      ],
+      "expected_behavior": "Only valid, non-expired tokens should be accepted"
+    },
+    "assertions": [
+      "Expired tokens are rejected",
+      "Tokens expire within configured time (e.g., 1 hour)",
+      "Invalid signatures are detected and rejected",
+      "Tampered tokens are rejected",
+      "Revoked tokens cannot be reused",
+      "Token validation includes signature verification",
+      "Token validation includes expiration check",
+      "Token validation includes issuer verification",
+      "Malformed tokens return appropriate error",
+      "Token validation is constant-time to prevent timing attacks"
+    ],
+    "severity": "critical",
+    "tags": [
+      "token_security",
+      "authentication",
+      "owasp_top10",
+      "session_management"
+    ]
+  },
+  {
+    "test_id": "sec_007",
+    "test_name": "test_jwt_security_if_used",
+    "description": "Verify JWT tokens follow security best practices if JWT is used",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "JWT Vulnerabilities",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "attack_vectors": [
+        "none_algorithm_attack",
+        "weak_secret_attack",
+        "algorithm_confusion_attack",
+        "token_substitution_attack"
+      ],
+      "expected_behavior": "JWT implementation must be secure against known attacks"
+    },
+    "assertions": [
+      "Algorithm 'none' is rejected",
+      "Only strong algorithms allowed (RS256, ES256, HS256 with strong secret)",
+      "Algorithm cannot be changed in token header",
+      "Secret key is at least 256 bits for HS256",
+      "Public key verification for RS256/ES256",
+      "Token includes 'exp' (expiration) claim",
+      "Token includes 'iat' (issued at) claim",
+      "Token includes 'jti' (JWT ID) for revocation",
+      "Sensitive data not stored in JWT payload",
+      "JWT library is up-to-date and patched"
+    ],
+    "severity": "high",
+    "tags": [
+      "jwt",
+      "token_security",
+      "cryptography",
+      "owasp_top10"
+    ]
+  },
+  {
+    "test_id": "sec_008",
+    "test_name": "test_brute_force_protection",
+    "description": "Verify authentication system has protection against brute force attacks",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Brute Force Attack",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "failed_attempts_threshold": 5,
+      "lockout_duration": 900,
+      "test_scenarios": [
+        "multiple_failed_logins",
+        "distributed_attack",
+        "credential_stuffing"
+      ],
+      "expected_behavior": "Account should be locked after threshold failed attempts"
+    },
+    "assertions": [
+      "Account locked after 5 failed login attempts",
+      "Lockout duration is at least 15 minutes",
+      "Rate limiting implemented per IP address",
+      "Rate limiting implemented per username",
+      "CAPTCHA required after 3 failed attempts",
+      "Failed login attempts are logged",
+      "Account unlock mechanism exists (email/admin)",
+      "Lockout applies even with correct password during lockout period",
+      "Response time consistent for valid/invalid credentials",
+      "No user enumeration through different error messages"
+    ],
+    "severity": "critical",
+    "tags": [
+      "brute_force",
+      "authentication",
+      "owasp_top10",
+      "rate_limiting"
+    ]
+  },
+  {
+    "test_id": "sec_009",
+    "test_name": "test_session_management_security",
+    "description": "Verify secure session management practices are implemented",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Broken Session Management",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "session_timeout": 1800,
+      "test_scenarios": [
+        "session_fixation",
+        "session_hijacking",
+        "concurrent_sessions",
+        "session_timeout"
+      ],
+      "expected_behavior": "Sessions must be secure and properly managed"
+    },
+    "assertions": [
+      "New session ID generated after login",
+      "Session ID regenerated after privilege escalation",
+      "Session expires after 30 minutes of inactivity",
+      "Session ID is cryptographically random",
+      "Session ID is at least 128 bits",
+      "Session cookies have HttpOnly flag",
+      "Session cookies have Secure flag (HTTPS only)",
+      "Session cookies have SameSite attribute",
+      "Old session invalidated after logout",
+      "Concurrent session limit enforced",
+      "Session data stored securely server-side"
+    ],
+    "severity": "critical",
+    "tags": [
+      "session_management",
+      "authentication",
+      "owasp_top10",
+      "cookies"
+    ]
+  },
+  {
+    "test_id": "sec_010",
+    "test_name": "test_broken_access_control",
+    "description": "Verify proper authorization checks prevent unauthorized access",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Broken Access Control",
+    "owasp_category": "A01:2021 - Broken Access Control",
+    "test_data": {
+      "test_scenarios": [
+        "horizontal_privilege_escalation",
+        "vertical_privilege_escalation",
+        "direct_object_reference",
+        "forced_browsing",
+        "missing_function_level_access_control"
+      ],
+      "expected_behavior": "Users can only access resources they are authorized for"
+    },
+    "assertions": [
+      "User cannot access another user's data",
+      "User cannot elevate privileges without proper authentication",
+      "Direct object references are validated",
+      "Authorization checked on every request",
+      "Default deny access control policy",
+      "Role-based access control (RBAC) properly implemented",
+      "Admin functions require admin role",
+      "API endpoints enforce authorization",
+      "File access restricted by user permissions",
+      "Authorization failures logged"
+    ],
+    "severity": "critical",
+    "tags": [
+      "access_control",
+      "authorization",
+      "owasp_top10",
+      "privilege_escalation"
+    ]
+  },
+  {
+    "test_id": "sec_011",
+    "test_name": "test_insecure_direct_object_references",
+    "description": "Verify system prevents IDOR vulnerabilities",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "IDOR",
+    "owasp_category": "A01:2021 - Broken Access Control",
+    "test_data": {
+      "attack_vectors": [
+        "sequential_id_enumeration",
+        "uuid_guessing",
+        "parameter_tampering"
+      ],
+      "expected_behavior": "Object references must be validated against user permissions"
+    },
+    "assertions": [
+      "User ID in URL/parameter validated against session",
+      "Sequential IDs do not expose other users' data",
+      "Indirect references used where possible",
+      "Authorization check before object access",
+      "Error messages do not confirm object existence",
+      "Rate limiting on object access attempts",
+      "Access attempts logged for audit"
+    ],
+    "severity": "high",
+    "tags": [
+      "idor",
+      "access_control",
+      "owasp_top10",
+      "authorization"
+    ]
+  },
+  {
+    "test_id": "sec_012",
+    "test_name": "test_xss_prevention_in_auth_forms",
+    "description": "Verify authentication forms are protected against XSS attacks",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Cross-Site Scripting (XSS)",
+    "owasp_category": "A03:2021 - Injection",
+    "test_data": {
+      "attack_vectors": [
+        "<script>alert('XSS')</script>",
+        "<img src=x onerror=alert('XSS')>",
+        "javascript:alert('XSS')",
+        "<svg onload=alert('XSS')>",
+        "'\"><script>alert('XSS')</script>",
+        "<iframe src='javascript:alert(\"XSS\")'></iframe>",
+        "<body onload=alert('XSS')>",
+        "<input onfocus=alert('XSS') autofocus>"
+      ],
+      "expected_behavior": "All XSS attempts should be sanitized or rejected"
+    },
+    "assertions": [
+      "HTML special characters are escaped in output",
+      "Script tags are not executed",
+      "Event handlers are neutralized",
+      "Content-Security-Policy header is set",
+      "X-XSS-Protection header is set",
+      "User input is validated and sanitized",
+      "Output encoding applied based on context",
+      "No inline JavaScript in authentication pages",
+      "Error messages do not reflect unsanitized input"
+    ],
+    "severity": "high",
+    "tags": [
+      "xss",
+      "injection",
+      "owasp_top10",
+      "input_validation"
+    ]
+  },
+  {
+    "test_id": "sec_013",
+    "test_name": "test_csrf_protection_in_auth",
+    "description": "Verify authentication endpoints are protected against CSRF attacks",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Cross-Site Request Forgery (CSRF)",
+    "owasp_category": "A01:2021 - Broken Access Control",
+    "test_data": {
+      "test_scenarios": [
+        "missing_csrf_token",
+        "invalid_csrf_token",
+        "reused_csrf_token",
+        "csrf_token_from_different_session"
+      ],
+      "expected_behavior": "All state-changing requests must include valid CSRF token"
+    },
+    "assertions": [
+      "CSRF token required for login",
+      "CSRF token required for password change",
+      "CSRF token required for account settings",
+      "CSRF token is cryptographically random",
+      "CSRF token is tied to user session",
+      "CSRF token expires with session",
+      "CSRF token cannot be reused",
+      "SameSite cookie attribute set to Strict or Lax",
+      "Requests without valid token are rejected",
+      "Double-submit cookie pattern or synchronizer token used"
+    ],
+    "severity": "high",
+    "tags": [
+      "csrf",
+      "authentication",
+      "owasp_top10",
+      "session_security"
+    ]
+  },
+  {
+    "test_id": "sec_014",
+    "test_name": "test_sensitive_data_exposure",
+    "description": "Verify sensitive authentication data is not exposed",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Sensitive Data Exposure",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "sensitive_fields": [
+        "password",
+        "token",
+        "session_id",
+        "api_key",
+        "secret"
+      ],
+      "expected_behavior": "Sensitive data must never be exposed in logs, errors, or responses"
+    },
+    "assertions": [
+      "Passwords not logged in plain text",
+      "Passwords not returned in API responses",
+      "Tokens not exposed in URLs",
+      "Session IDs not logged",
+      "Error messages do not contain sensitive data",
+      "Stack traces not exposed to users",
+      "Database credentials not in source code",
+      "API keys not hardcoded",
+      "Secrets stored in environment variables or secure vault",
+      "HTTPS enforced for all authentication endpoints",
+      "Sensitive data encrypted at rest",
+      "Sensitive data encrypted in transit"
+    ],
+    "severity": "critical",
+    "tags": [
+      "data_exposure",
+      "cryptography",
+      "owasp_top10",
+      "sensitive_data"
+    ]
+  },
+  {
+    "test_id": "sec_015",
+    "test_name": "test_security_headers",
+    "description": "Verify proper security headers are set for authentication endpoints",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Security Misconfiguration",
+    "owasp_category": "A05:2021 - Security Misconfiguration",
+    "test_data": {
+      "required_headers": [
+        "Strict-Transport-Security",
+        "X-Frame-Options",
+        "X-Content-Type-Options",
+        "Content-Security-Policy",
+        "X-XSS-Protection",
+        "Referrer-Policy",
+        "Permissions-Policy"
+      ],
+      "expected_behavior": "All security headers must be properly configured"
+    },
+    "assertions": [
+      "Strict-Transport-Security header present with max-age >= 31536000",
+      "X-Frame-Options set to DENY or SAMEORIGIN",
+      "X-Content-Type-Options set to nosniff",
+      "Content-Security-Policy properly configured",
+      "X-XSS-Protection set to 1; mode=block",
+      "Referrer-Policy set to no-referrer or strict-origin",
+      "Permissions-Policy restricts dangerous features",
+      "Server header does not expose version information",
+      "X-Powered-By header removed",
+      "Cache-Control set appropriately for auth pages"
+    ],
+    "severity": "high",
+    "tags": [
+      "security_headers",
+      "configuration",
+      "owasp_top10",
+      "hardening"
+    ]
+  },
+  {
+    "test_id": "sec_016",
+    "test_name": "test_timing_attack_prevention",
+    "description": "Verify authentication is protected against timing attacks",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Timing Attack",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "test_scenarios": [
+        "valid_username_invalid_password",
+        "invalid_username",
+        "valid_credentials"
+      ],
+      "expected_behavior": "Response time should be constant regardless of input validity"
+    },
+    "assertions": [
+      "Response time for valid username is same as invalid username",
+      "Password comparison uses constant-time algorithm",
+      "No early return on username validation",
+      "Token comparison uses constant-time algorithm",
+      "Hash comparison uses constant-time algorithm",
+      "Response time variance is less than 10ms",
+      "No information leaked through timing differences"
+    ],
+    "severity": "high",
+    "tags": [
+      "timing_attack",
+      "cryptography",
+      "authentication",
+      "side_channel"
+    ]
+  },
+  {
+    "test_id": "sec_017",
+    "test_name": "test_user_enumeration_prevention",
+    "description": "Verify system does not allow user enumeration",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "User Enumeration",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "test_scenarios": [
+        "login_with_valid_username",
+        "login_with_invalid_username",
+        "password_reset_valid_email",
+        "password_reset_invalid_email",
+        "registration_existing_username"
+      ],
+      "expected_behavior": "Error messages should not reveal if username/email exists"
+    },
+    "assertions": [
+      "Same error message for invalid username and invalid password",
+      "Password reset gives same response for valid/invalid email",
+      "Registration does not confirm if username exists",
+      "Response time consistent for existing/non-existing users",
+      "No different HTTP status codes for valid/invalid users",
+      "Account lockout messages do not confirm account existence",
+      "Forgot password does not confirm email existence"
+    ],
+    "severity": "high",
+    "tags": [
+      "user_enumeration",
+      "authentication",
+      "information_disclosure",
+      "owasp_top10"
+    ]
+  },
+  {
+    "test_id": "sec_018",
+    "test_name": "test_password_reset_security",
+    "description": "Verify password reset functionality is secure",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Insecure Password Reset",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "test_scenarios": [
+        "token_reuse",
+        "token_expiration",
+        "token_guessing",
+        "account_takeover"
+      ],
+      "expected_behavior": "Password reset must be secure against common attacks"
+    },
+    "assertions": [
+      "Reset token is cryptographically random (128+ bits)",
+      "Reset token expires within 1 hour",
+      "Reset token can only be used once",
+      "Reset token tied to specific user account",
+      "Old password invalidated after reset",
+      "Reset link sent only to registered email",
+      "Rate limiting on reset requests",
+      "Reset requires email verification",
+      "User notified of password change",
+      "Reset token not exposed in URL if possible",
+      "Reset token not logged",
+      "Account locked after multiple reset attempts"
+    ],
+    "severity": "critical",
+    "tags": [
+      "password_reset",
+      "authentication",
+      "owasp_top10",
+      "account_security"
+    ]
+  },
+  {
+    "test_id": "sec_019",
+    "test_name": "test_multi_factor_authentication",
+    "description": "Verify MFA implementation if present is secure",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Weak MFA Implementation",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "test_scenarios": [
+        "mfa_bypass",
+        "totp_code_reuse",
+        "backup_code_security",
+        "mfa_enrollment"
+      ],
+      "expected_behavior": "MFA must be properly implemented and cannot be bypassed"
+    },
+    "assertions": [
+      "MFA cannot be bypassed through direct URL access",
+      "TOTP codes expire after 30-60 seconds",
+      "TOTP codes cannot be reused",
+      "Backup codes are single-use",
+      "Backup codes are cryptographically random",
+      "MFA required for sensitive operations",
+      "MFA enrollment requires current password",
+      "MFA secret stored securely encrypted",
+      "Rate limiting on MFA code attempts",
+      "Account locked after failed MFA attempts",
+      "MFA recovery process is secure",
+      "SMS codes (if used) have short expiration"
+    ],
+    "severity": "high",
+    "tags": [
+      "mfa",
+      "2fa",
+      "authentication",
+      "owasp_top10",
+      "totp"
+    ]
+  },
+  {
+    "test_id": "sec_020",
+    "test_name": "test_credential_stuffing_protection",
+    "description": "Verify protection against credential stuffing attacks",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Credential Stuffing",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "test_scenarios": [
+        "multiple_accounts_same_ip",
+        "rapid_login_attempts",
+        "distributed_attack"
+      ],
+      "expected_behavior": "System should detect and block credential stuffing attempts"
+    },
+    "assertions": [
+      "Rate limiting per IP address",
+      "Rate limiting per username",
+      "CAPTCHA required after suspicious activity",
+      "Device fingerprinting implemented",
+      "Anomaly detection for login patterns",
+      "IP reputation checking",
+      "Geolocation-based anomaly detection",
+      "User notified of suspicious login attempts",
+      "Temporary account lock on suspicious activity",
+      "Integration with threat intelligence feeds"
+    ],
+    "severity": "high",
+    "tags": [
+      "credential_stuffing",
+      "authentication",
+      "rate_limiting",
+      "owasp_top10"
+    ]
+  },
+  {
+    "test_id": "sec_021",
+    "test_name": "test_insecure_deserialization",
+    "description": "Verify system is protected against insecure deserialization attacks",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Insecure Deserialization",
+    "owasp_category": "A08:2021 - Software and Data Integrity Failures",
+    "test_data": {
+      "attack_vectors": [
+        "malicious_pickle_payload",
+        "yaml_code_execution",
+        "json_prototype_pollution"
+      ],
+      "expected_behavior": "Deserialization must be secure and validated"
+    },
+    "assertions": [
+      "Pickle deserialization not used for untrusted data",
+      "YAML safe_load used instead of load",
+      "JSON deserialization validates schema",
+      "Deserialized objects validated before use",
+      "Type checking on deserialized data",
+      "Whitelist of allowed classes for deserialization",
+      "Digital signatures verified before deserialization",
+      "Deserialization errors handled securely",
+      "No code execution through deserialization"
+    ],
+    "severity": "high",
+    "tags": [
+      "deserialization",
+      "code_execution",
+      "owasp_top10",
+      "injection"
+    ]
+  },
+  {
+    "test_id": "sec_022",
+    "test_name": "test_dependency_vulnerabilities",
+    "description": "Verify authentication dependencies are up-to-date and secure",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Vulnerable Components",
+    "owasp_category": "A06:2021 - Vulnerable and Outdated Components",
+    "test_data": {
+      "critical_dependencies": [
+        "cryptography",
+        "pyjwt",
+        "bcrypt",
+        "argon2-cffi",
+        "passlib"
+      ],
+      "expected_behavior": "All dependencies must be current and without known vulnerabilities"
+    },
+    "assertions": [
+      "No dependencies with known CVEs",
+      "Dependencies are actively maintained",
+      "Dependencies are up-to-date (within 6 months)",
+      "No deprecated dependencies used",
+      "Dependency versions pinned in requirements",
+      "Regular dependency scanning performed",
+      "Security advisories monitored",
+      "Transitive dependencies checked",
+      "No unnecessary dependencies included"
+    ],
+    "severity": "high",
+    "tags": [
+      "dependencies",
+      "vulnerabilities",
+      "owasp_top10",
+      "supply_chain"
+    ]
+  },
+  {
+    "test_id": "sec_023",
+    "test_name": "test_logging_and_monitoring",
+    "description": "Verify security events are properly logged for audit and monitoring",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Insufficient Logging",
+    "owasp_category": "A09:2021 - Security Logging and Monitoring Failures",
+    "test_data": {
+      "events_to_log": [
+        "login_success",
+        "login_failure",
+        "password_change",
+        "account_lockout",
+        "privilege_escalation",
+        "token_generation",
+        "suspicious_activity"
+      ],
+      "expected_behavior": "All security events must be logged with sufficient detail"
+    },
+    "assertions": [
+      "Failed login attempts logged with username and IP",
+      "Successful logins logged with timestamp and location",
+      "Password changes logged",
+      "Account lockouts logged",
+      "Privilege changes logged",
+      "Token generation and validation logged",
+      "Logs include user ID, timestamp, IP, action",
+      "Logs do not contain passwords or tokens",
+      "Logs are tamper-proof",
+      "Logs are retained for adequate period (90+ days)",
+      "Real-time alerting for critical events",
+      "Log aggregation and analysis in place"
+    ],
+    "severity": "high",
+    "tags": [
+      "logging",
+      "monitoring",
+      "owasp_top10",
+      "audit",
+      "siem"
+    ]
+  },
+  {
+    "test_id": "sec_024",
+    "test_name": "test_api_authentication_security",
+    "description": "Verify API authentication endpoints follow security best practices",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "API Security",
+    "owasp_category": "A01:2021 - Broken Access Control",
+    "test_data": {
+      "test_scenarios": [
+        "missing_authentication",
+        "weak_api_keys",
+        "token_in_url",
+        "cors_misconfiguration"
+      ],
+      "expected_behavior": "API authentication must be secure and properly configured"
+    },
+    "assertions": [
+      "All API endpoints require authentication",
+      "API keys are sufficiently long (256+ bits)",
+      "API keys are not passed in URL parameters",
+      "Bearer token authentication used for APIs",
+      "CORS properly configured (not wildcard *)",
+      "API rate limiting enforced",
+      "API versioning implemented",
+      "API documentation does not expose sensitive info",
+      "API errors do not leak implementation details",
+      "API supports OAuth 2.0 or similar standard",
+      "API tokens have appropriate scopes/permissions"
+    ],
+    "severity": "critical",
+    "tags": [
+      "api_security",
+      "authentication",
+      "owasp_top10",
+      "rest_api"
+    ]
+  },
+  {
+    "test_id": "sec_025",
+    "test_name": "test_account_lockout_bypass",
+    "description": "Verify account lockout cannot be bypassed",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Authentication Bypass",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "bypass_attempts": [
+        "case_variation_username",
+        "whitespace_in_username",
+        "different_ip_address",
+        "user_agent_change",
+        "cookie_manipulation"
+      ],
+      "expected_behavior": "Account lockout must be enforced consistently"
+    },
+    "assertions": [
+      "Lockout applies regardless of username case",
+      "Lockout applies with whitespace variations",
+      "Lockout persists across IP changes",
+      "Lockout persists across user agent changes",
+      "Lockout cannot be bypassed by clearing cookies",
+      "Lockout stored server-side, not client-side",
+      "Lockout applies to all authentication methods",
+      "Lockout duration cannot be manipulated",
+      "Lockout counter cannot be reset by attacker"
+    ],
+    "severity": "high",
+    "tags": [
+      "account_lockout",
+      "authentication",
+      "bypass",
+      "owasp_top10"
+    ]
+  },
+  {
+    "test_id": "sec_026",
+    "test_name": "test_secure_password_storage",
+    "description": "Verify passwords are stored securely with proper salting",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Insecure Password Storage",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "test_passwords": [
+        "TestPassword1!",
+        "AnotherPass2@",
+        "SecurePass3#"
+      ],
+      "expected_behavior": "Each password must have unique salt and strong hash"
+    },
+    "assertions": [
+      "Each password has unique salt",
+      "Salt is at least 128 bits",
+      "Salt is cryptographically random",
+      "Salt is stored with hash",
+      "Hash function is bcrypt, argon2, or scrypt",
+      "Work factor/iterations appropriate for algorithm",
+      "Password hashes are not reversible",
+      "Rainbow table attacks prevented by salting",
+      "No password hashes in application logs",
+      "Password database encrypted at rest"
+    ],
+    "severity": "critical",
+    "tags": [
+      "password_storage",
+      "cryptography",
+      "owasp_top10",
+      "hashing"
+    ]
+  },
+  {
+    "test_id": "sec_027",
+    "test_name": "test_oauth_implementation_security",
+    "description": "Verify OAuth implementation follows security best practices if used",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "OAuth Vulnerabilities",
+    "owasp_category": "A07:2021 - Identification and Authentication Failures",
+    "test_data": {
+      "test_scenarios": [
+        "csrf_in_oauth_flow",
+        "redirect_uri_manipulation",
+        "token_leakage",
+        "scope_escalation"
+      ],
+      "expected_behavior": "OAuth implementation must be secure against known attacks"
+    },
+    "assertions": [
+      "State parameter used to prevent CSRF",
+      "Redirect URI strictly validated",
+      "Authorization code used only once",
+      "Authorization code expires quickly (10 minutes)",
+      "PKCE (Proof Key for Code Exchange) implemented",
+      "Tokens not exposed in URL fragments",
+      "Scope properly validated and enforced",
+      "Client secret stored securely",
+      "Token endpoint uses client authentication",
+      "Refresh tokens rotated on use",
+      "Tokens bound to client"
+    ],
+    "severity": "high",
+    "tags": [
+      "oauth",
+      "authentication",
+      "owasp_top10",
+      "sso"
+    ]
+  },
+  {
+    "test_id": "sec_028",
+    "test_name": "test_input_validation_authentication",
+    "description": "Verify comprehensive input validation on authentication endpoints",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Input Validation",
+    "owasp_category": "A03:2021 - Injection",
+    "test_data": {
+      "invalid_inputs": [
+        "null_bytes",
+        "unicode_characters",
+        "extremely_long_strings",
+        "special_characters",
+        "control_characters",
+        "format_strings"
+      ],
+      "expected_behavior": "All inputs must be validated and sanitized"
+    },
+    "assertions": [
+      "Null bytes rejected or sanitized",
+      "Unicode validation performed",
+      "Maximum length enforced (username, password)",
+      "Special characters properly handled",
+      "Control characters rejected",
+      "Format string attacks prevented",
+      "Input encoding validated",
+      "Whitelist validation where possible",
+      "Regex patterns are not vulnerable to ReDoS",
+      "Input validation on both client and server"
+    ],
+    "severity": "high",
+    "tags": [
+      "input_validation",
+      "sanitization",
+      "owasp_top10",
+      "injection"
+    ]
+  },
+  {
+    "test_id": "sec_029",
+    "test_name": "test_secure_communication",
+    "description": "Verify all authentication communication uses secure protocols",
+    "priority": "critical",
+    "test_type": "security",
+    "vulnerability_type": "Insecure Communication",
+    "owasp_category": "A02:2021 - Cryptographic Failures",
+    "test_data": {
+      "test_scenarios": [
+        "http_downgrade",
+        "weak_tls_version",
+        "weak_cipher_suite",
+        "certificate_validation"
+      ],
+      "expected_behavior": "All communication must use TLS 1.2+ with strong ciphers"
+    },
+    "assertions": [
+      "HTTPS enforced for all authentication endpoints",
+      "HTTP requests redirected to HTTPS",
+      "TLS 1.2 or higher required",
+      "Weak cipher suites disabled",
+      "Forward secrecy enabled",
+      "Certificate validation enforced",
+      "Certificate pinning considered for mobile apps",
+      "HSTS header set with long max-age",
+      "Mixed content blocked",
+      "Secure WebSocket (WSS) used if applicable"
+    ],
+    "severity": "critical",
+    "tags": [
+      "tls",
+      "https",
+      "encryption",
+      "owasp_top10",
+      "transport_security"
+    ]
+  },
+  {
+    "test_id": "sec_030",
+    "test_name": "test_security_misconfiguration",
+    "description": "Verify authentication system has no security misconfigurations",
+    "priority": "high",
+    "test_type": "security",
+    "vulnerability_type": "Security Misconfiguration",
+    "owasp_category": "A05:2021 - Security Misconfiguration",
+    "test_data": {
+      "configuration_checks": [
+        "default_credentials",
+        "debug_mode",
+        "directory_listing",
+        "unnecessary_features",
+        "error_handling"
+      ],
+      "expected_behavior": "System must be securely configured in production"
+    },
+    "assertions": [
+      "No default credentials present",
+      "Debug mode disabled in production",
+      "Directory listing disabled",
+      "Unnecessary features disabled",
+      "Error messages do not expose stack traces",
+      "Sample/test accounts removed",
+      "Admin interfaces properly secured",
+      "Unused HTTP methods disabled",
+      "Security patches applied",
+      "Secure defaults used for all settings",
+      "Configuration management automated",
+      "Regular security configuration reviews performed"
+    ],
+    "severity": "high",
+    "tags": [
+      "misconfiguration",
+      "hardening",
+      "owasp_top10",
+      "configuration"
+    ]
+  }
+]

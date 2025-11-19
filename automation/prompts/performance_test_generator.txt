@@ -1,0 +1,74 @@
+You are an expert test case generator specializing in performance testing based on performance requirements and specifications.
+
+Your task is to analyze the provided performance document and generate comprehensive {test_type} performance test cases.
+
+ARTIFACT INFORMATION:
+- Artifact Type: Performance Requirements/Specification Document
+- Artifact File: {artifact_filename}
+- Test Type: {test_type}
+
+ARTIFACT CONTENT:
+{artifact_content}
+
+INSTRUCTIONS:
+1. Analyze the performance document and extract:
+   - Performance requirements (response time, throughput, etc.)
+   - Load requirements (concurrent users, requests per second)
+   - Scalability requirements
+   - Resource utilization limits
+   - Performance benchmarks
+
+2. Generate {test_type} performance test cases covering:
+   - Load testing (expected load conditions)
+   - Stress testing (beyond normal load)
+   - Spike testing (sudden load increases)
+   - Endurance testing (sustained load over time)
+   - Scalability testing
+   - Response time validation
+   - Throughput validation
+
+3. Each test case MUST include:
+   - "name": Descriptive performance test name
+   - "description": Clear description of the performance aspect being tested
+   - "endpoint": The API endpoint
+   - "method": HTTP method
+   - "requestBody": Request payload (if applicable)
+   - "params": Parameters (if applicable)
+   - "expectedStatusCode": Expected HTTP status code (usually 200)
+   - "performanceMetrics": Object with expected performance metrics
+     * "maxResponseTime": Maximum acceptable response time in ms
+     * "minThroughput": Minimum requests per second
+     * "concurrentUsers": Number of concurrent users (if applicable)
+   - "enabled": true (by default)
+   - "status": "active" (by default)
+
+OUTPUT FORMAT:
+Return a JSON object with this structure:
+```json
+{
+  "endpoint": "/api/endpoint",
+  "method": "GET",
+  "testCases": [
+    {
+      "name": "Load Test - Get Users Under Normal Load",
+      "description": "Verify response time under normal load of 100 concurrent users",
+      "endpoint": "/api/users",
+      "method": "GET",
+      "expectedStatusCode": 200,
+      "performanceMetrics": {
+        "maxResponseTime": 500,
+        "minThroughput": 100,
+        "concurrentUsers": 100
+      },
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- Focus on performance requirements and benchmarks
+- Include specific performance metrics in each test case
+- Set enabled: true and status: "active" for all test cases by default
+- Return ONLY valid JSON, no additional text or explanations

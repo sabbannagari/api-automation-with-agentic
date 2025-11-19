@@ -1,0 +1,335 @@
+{
+  "endpoint": "/users",
+  "method": "GET",
+  "testCases": [
+    {
+      "name": "Get all users - Success",
+      "description": "Verify that GET /users returns a successful response with status 200",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With pagination parameters",
+      "description": "Verify that GET /users works correctly with pagination query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "1",
+        "limit": "10"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With filter parameters",
+      "description": "Verify that GET /users works correctly with filter query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "status": "active",
+        "role": "admin"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With sorting parameters",
+      "description": "Verify that GET /users works correctly with sorting query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "sortBy": "createdAt",
+        "order": "desc"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Empty result set",
+      "description": "Verify that GET /users returns 200 even when no users exist",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Invalid query parameter type",
+      "description": "Verify that GET /users handles invalid query parameter types appropriately",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "invalid",
+        "limit": "notanumber"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Boundary value for pagination",
+      "description": "Verify that GET /users handles boundary values for pagination parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "0",
+        "limit": "0"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Large pagination limit",
+      "description": "Verify that GET /users handles very large pagination limit values",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "1",
+        "limit": "10000"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Negative pagination values",
+      "description": "Verify that GET /users rejects negative pagination values",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "-1",
+        "limit": "-10"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Unauthorized access",
+      "description": "Verify that GET /users returns 401 when authentication is missing",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 401,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Forbidden access",
+      "description": "Verify that GET /users returns 403 when user lacks permissions",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 403,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Server error handling",
+      "description": "Verify that GET /users handles server errors gracefully",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 500,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With special characters in query",
+      "description": "Verify that GET /users handles special characters in query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "user@example.com",
+        "name": "John O'Brien"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - SQL injection attempt",
+      "description": "Verify that GET /users is protected against SQL injection in query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "'; DROP TABLE users; --"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - XSS attempt in parameters",
+      "description": "Verify that GET /users sanitizes XSS attempts in query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "<script>alert('xss')</script>"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With multiple combined parameters",
+      "description": "Verify that GET /users handles multiple query parameters combined together",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "2",
+        "limit": "20",
+        "sortBy": "name",
+        "order": "asc",
+        "status": "active"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With empty string parameters",
+      "description": "Verify that GET /users handles empty string query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "",
+        "status": ""
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With unicode characters",
+      "description": "Verify that GET /users handles unicode characters in query parameters",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "\u7528\u6237",
+        "name": "Jos\u00e9 Garc\u00eda"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With URL encoded parameters",
+      "description": "Verify that GET /users handles URL encoded query parameters correctly",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "search": "user%40example.com",
+        "name": "John%20Doe"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Rate limiting check",
+      "description": "Verify that GET /users enforces rate limiting when threshold is exceeded",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 429,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Service unavailable",
+      "description": "Verify that GET /users returns 503 when service is temporarily unavailable",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {},
+      "expectedStatusCode": 503,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With invalid sort order",
+      "description": "Verify that GET /users handles invalid sort order values",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "sortBy": "name",
+        "order": "invalid"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With non-existent field for sorting",
+      "description": "Verify that GET /users handles sorting by non-existent fields",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "sortBy": "nonExistentField",
+        "order": "asc"
+      },
+      "expectedStatusCode": 400,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - Maximum page number",
+      "description": "Verify that GET /users handles maximum page number boundary",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "page": "999999",
+        "limit": "10"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "name": "Get all users - With duplicate query parameters",
+      "description": "Verify that GET /users handles duplicate query parameters appropriately",
+      "endpoint": "/users",
+      "method": "GET",
+      "requestBody": null,
+      "params": {
+        "status": "active"
+      },
+      "expectedStatusCode": 200,
+      "enabled": true,
+      "status": "active"
+    }
+  ]
+}

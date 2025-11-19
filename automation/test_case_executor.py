@@ -198,9 +198,17 @@ def execute_tests(testcases_dir=TESTCASES_DIR, base_url=BASE_URL, auth_type=AUTH
 
             # Execute each test case for this endpoint
             for idx, test_case in enumerate(test_cases, 1):
-                total_tests += 1
                 test_name = test_case.get("name", f"Test {idx}")
                 description = test_case.get("description", "")
+                enabled = test_case.get("enabled", True)  # Default to True if not specified
+
+                # Skip disabled test cases
+                if not enabled:
+                    print(f"\n   ⏭️  Test {idx}: {test_name}")
+                    print(f"      Status: SKIPPED (enabled: false)")
+                    continue
+
+                total_tests += 1
                 request_body = test_case.get("requestBody", {})
                 params = test_case.get("params", None)
                 expected_status = test_case.get("expectedStatusCode", 200)

@@ -1,0 +1,25 @@
+Analyze this code change:
+
+FILE INFORMATION:
+- Path: {filepath}
+- Name: {filename}
+- Change Type: {change_type}
+
+CODE STRUCTURE (from AST parsing):
+{code_structure}
+
+DIFF ANALYSIS (functions/classes changed):
+{diff_analysis}
+
+SECURITY PATTERNS DETECTED:
+{security_concerns}
+
+PERFORMANCE PATTERNS DETECTED:
+{performance_concerns}
+
+GIT DIFF (first 2000 chars):
+```
+{diff}
+```
+
+Provide your analysis in the JSON format specified in the system prompt.
