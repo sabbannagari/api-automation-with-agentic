@@ -403,11 +403,10 @@ Examples:
     )
 
     parser.add_argument(
-        "-test-case-type",
-        dest="test_case_type",
+        "--task",
+        dest="task",
         type=str,
         required=True,
-        choices=['integration', 'component', 'system', 'regression', 'all'],
         help="Type of test cases to generate"
     )
 
@@ -424,7 +423,7 @@ Examples:
     print("\n" + "="*80)
     print("🎯 MASTER TEST CASE GENERATOR - TDAG (Task Decomposition + Agent Generation)")
     print("="*80)
-    print(f"Test Case Type: {args.test_case_type}")
+    print(f"Task: {args.task}")
     print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*80)
 
@@ -456,7 +455,7 @@ Examples:
                 print(f"\n⚙️  Step 0.9: Executing Specialized Agents from Plan...")
                 specialized_results = execute_specialized_agents(
                     agent_tasks=execution_plan.get("agent_tasks", []),
-                    test_type=args.test_case_type,
+                    test_type=args.task,
                     config=global_config,
                     max_workers=args.max_workers
                 )
@@ -490,10 +489,10 @@ Examples:
         detector.print_detection_summary(artifacts)
 
         # Step 2: Execute artifact-based agents
-        print(f"\n⚙️  Step 2: Generating {args.test_case_type.upper()} Test Cases from Artifacts...")
+        print(f"\n⚙️  Step 2: Generating {args.task.upper()} Test Cases from Artifacts...")
         results = execute_agents_parallel(
             artifacts=artifacts,
-            test_type=args.test_case_type,
+            test_type=args.task,
             config=global_config,
             max_workers=args.max_workers
         )
@@ -611,7 +610,7 @@ Examples:
     # Save execution summary
     summary = {
         "timestamp": datetime.now().isoformat(),
-        "test_case_type": args.test_case_type,
+        "test_case_type": args.task,
         "artifacts_processed": len(artifacts),
         "specialized_agents": len(specialized_results),
         "successful": len(successful),
