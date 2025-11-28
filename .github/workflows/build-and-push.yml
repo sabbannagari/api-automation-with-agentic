@@ -19,7 +19,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.actor }}/test-case-generator   # GHCR username + repo
+      IMAGE_NAME: ${{ github.actor }}/agentic-automation   # GHCR username + repo
 
     steps:
       - name: Checkout repo
