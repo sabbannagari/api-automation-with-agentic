@@ -19,7 +19,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.actor }}/agentic-automation   # GHCR username + repo
+      IMAGE_NAME: ${{ github.actor }}/agentic-automation  # GHCR username + repo
 
     steps:
       - name: Checkout repo
@@ -43,12 +43,12 @@ jobs:
           echo "build_tag=${BUILD_TAG}" >> $GITHUB_OUTPUT
           echo "Build tag will be: $BUILD_TAG"
 
-      - name: Build & Push Docker Image
+      - name: Build & Push Docker Image (short tag only)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: build/Dockerfile
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.buildtag.outputs.build_tag }}
+          platforms: linux/amd64                # single platform → no manifest digest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.buildtag.outputs.build_tag }}
 
