@@ -5,6 +5,7 @@ on:
     paths:
       - 'automation/**'
       - 'build/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
