@@ -3,8 +3,8 @@ name: Build & Push Docker Image to GHCR
 on:
   push:
     paths:
-      - 'automation/**'    # Rebuild if automation changes
-      - 'automation/build/**'         # Rebuild if Dockerfile or requirements change
+      - 'automation/**'
+      - 'build/**'
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.actor }}/agentic-automation   # GHCR username + repo
+      IMAGE_NAME: ${{ github.actor }}/test-case-generator   # GHCR username + repo
 
     steps:
       - name: Checkout repo
@@ -34,17 +34,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract SHA tag
-        id: vars
-        run: echo "sha_tag=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+      - name: Set build tag (buildnumber-commitsha)
+        id: buildtag
+        run: |
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          BUILD_TAG="build${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
+          echo "build_tag=${BUILD_TAG}" >> $GITHUB_OUTPUT
+          echo "Build tag will be: $BUILD_TAG"
 
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .                     # repo root
-          file: build/Dockerfile          # Dockerfile path
+          context: .
+          file: build/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.buildtag.outputs.build_tag }}
 
