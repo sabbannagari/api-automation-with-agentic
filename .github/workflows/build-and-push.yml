@@ -49,6 +49,6 @@ jobs:
           context: .
           file: build/Dockerfile
           push: true
-          platforms: linux/amd64                # single platform → no manifest digest
+          platforms: linux/amd64,linux/arm64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.buildtag.outputs.build_tag }}
 
